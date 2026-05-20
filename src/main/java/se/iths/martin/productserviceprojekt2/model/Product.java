@@ -1,8 +1,7 @@
 package se.iths.martin.productserviceprojekt2.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -10,24 +9,23 @@ import java.math.BigDecimal;
 @Table(name = "products")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false)
     private String name;
+
+    @Column(length = 1000)
     private String description;
+
     @Column(nullable = false)
     private BigDecimal price;
+
+    @Column(nullable = false)
     private int stock;
-
-    public Product() {
-    }
-
-    public Product(String name, String description, BigDecimal price, int stock) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-    }
 }
