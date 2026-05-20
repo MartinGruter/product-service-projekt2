@@ -29,6 +29,10 @@ public class ProductController {
     }
 
     // Get a single product endpoint
+    @GetMapping("/{id}")
+    public ProductResponseDTO getProduct(@PathVariable Long id) {
+        return productService.getProductById(id);
+    }
 
     // Delete a product endpoint
 

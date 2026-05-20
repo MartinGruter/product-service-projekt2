@@ -25,6 +25,10 @@ public class ProductService {
     }
 
     // Hämta specifik produkt
+    public ProductResponseDTO getProductById(Long id) {
+        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        return productMapper.toResponseDTO(product);
+    }
 
     // Ta bort produkt
 
