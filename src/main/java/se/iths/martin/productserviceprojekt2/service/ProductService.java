@@ -8,6 +8,8 @@ import se.iths.martin.productserviceprojekt2.mapper.ProductMapper;
 import se.iths.martin.productserviceprojekt2.model.Product;
 import se.iths.martin.productserviceprojekt2.repository.ProductRepository;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -15,6 +17,12 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     // Hämta alla produkter
+    public List<ProductResponseDTO> getAllProducts() {
+        return productRepository.findAll()
+                .stream()
+                .map(productMapper::toResponseDTO)
+                .toList();
+    }
 
     // Hämta specifik produkt
 
