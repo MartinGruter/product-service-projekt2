@@ -13,8 +13,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-    private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final ProductRepository productRepository;
 
     // Hämta alla produkter
     public List<ProductResponseDTO> getAllProducts() {
