@@ -32,9 +32,10 @@ public class ProductService {
 
     // Ta bort produkt
     public void deleteProductById(Long id) {
-        if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
+        if (!productRepository.existsById(id)) {
+            throw new RuntimeException("Product not found");
         }
+        productRepository.deleteById(id);
     }
 
     // Skapa produkt
