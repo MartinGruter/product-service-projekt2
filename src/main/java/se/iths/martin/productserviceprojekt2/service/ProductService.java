@@ -31,6 +31,11 @@ public class ProductService {
     }
 
     // Ta bort produkt
+    public void deleteProductById(Long id) {
+        if (productRepository.existsById(id)) {
+            productRepository.deleteById(id);
+        }
+    }
 
     // Skapa produkt
     public ProductResponseDTO createProduct(ProductRequestDTO request) {

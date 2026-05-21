@@ -35,6 +35,11 @@ public class ProductController {
     }
 
     // Delete a product endpoint
+    @DeleteMapping("/{id}")
+    public String deleteProduct(@PathVariable Long id) {
+        productService.deleteProductById(id);
+        return "Product with id: " + id + " has been deleted";
+    }
 
     // Decrease stock endpoint
 }
