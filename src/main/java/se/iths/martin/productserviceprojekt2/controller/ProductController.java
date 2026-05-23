@@ -2,6 +2,8 @@ package se.iths.martin.productserviceprojekt2.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import se.iths.martin.productserviceprojekt2.dto.ProductRequestDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductResponseDTO;
@@ -18,27 +20,29 @@ public class ProductController {
 
     // Create product endpoint (ADMIN only)
     @PostMapping
-    public ProductResponseDTO createProduct(@Valid @RequestBody ProductRequestDTO requestDTO) {
-        return productService.createProduct(requestDTO);
+    public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO requestDTO) {
+        ProductResponseDTO responseDTO = productService.createProduct(requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
     // List all products endpoint
     @GetMapping
-    public List<ProductResponseDTO> getAllProducts() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
+        List<ProductResponseDTO> responseDTOS = productService.getAllProducts();
+        return ResponseEntity.ok(responseDTOS);
     }
 
     // Get a single product endpoint
     @GetMapping("/{id}")
-    public ProductResponseDTO getProduct(@PathVariable Long id) {
-        return productService.getProductById(id);
+    public ResponseEntity<ProductResponseDTO> getProduct(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
     // Delete a product endpoint
     @DeleteMapping("/{id}")
-    public String deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         productService.deleteProductById(id);
-        return "Product with id: " + id + " has been deleted";
+        return ResponseEntity.noContent().build();
     }
 
     // Decrease stock endpoint
