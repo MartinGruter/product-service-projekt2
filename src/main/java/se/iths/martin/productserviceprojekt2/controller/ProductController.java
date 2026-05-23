@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import se.iths.martin.productserviceprojekt2.dto.ProductRequestDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductResponseDTO;
+import se.iths.martin.productserviceprojekt2.dto.ProductStockRequest;
 import se.iths.martin.productserviceprojekt2.service.ProductService;
 
 import java.util.List;
@@ -46,5 +47,11 @@ public class ProductController {
     }
 
     // Decrease stock endpoint
+    @PostMapping("/stock/decrease")
+    public ResponseEntity<List<ProductResponseDTO>> decreaseStock(
+            @Valid @RequestBody List<ProductStockRequest> requests) {
+        List<ProductResponseDTO> result = productService.decreaseStock(requests);
+        return ResponseEntity.ok(result);
+    }
 }
 
