@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import se.iths.martin.productserviceprojekt2.dto.ProductRequestDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductResponseDTO;
+import se.iths.martin.productserviceprojekt2.exception.ProductNotFoundException;
 import se.iths.martin.productserviceprojekt2.mapper.ProductMapper;
 import se.iths.martin.productserviceprojekt2.model.Product;
 import se.iths.martin.productserviceprojekt2.repository.ProductRepository;
@@ -26,14 +27,14 @@ public class ProductService {
 
     // Hämta specifik produkt
     public ProductResponseDTO getProductById(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
         return productMapper.toResponseDTO(product);
     }
 
     // Ta bort produkt
     public void deleteProductById(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new RuntimeException("Product not found");
+            throw new ProductNotFoundException(id);
         }
         productRepository.deleteById(id);
     }
