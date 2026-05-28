@@ -1,20 +1,25 @@
 package se.iths.martin.productserviceprojekt2;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import se.iths.martin.productserviceprojekt2.dto.ProductRequestDTO;
+import se.iths.martin.productserviceprojekt2.dto.ProductStockRequest;
 import se.iths.martin.productserviceprojekt2.model.Product;
 import se.iths.martin.productserviceprojekt2.repository.ProductRepository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,6 +29,8 @@ public class ProductIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private ProductRepository productRepository;
 
@@ -45,17 +52,57 @@ public class ProductIntegrationTest {
 
     @Test
     @DisplayName("Testing create product as ADMIN")
-    public void createProductAdmin() {
+    @WithMockUser(roles = "ADMIN")
+    public void createProductAdmin() throws Exception {
+        ProductRequestDTO requestDTO = ProductRequestDTO.builder()
+                .name("Test Product")
+                .price(new BigDecimal("199.99"))
+                .stock(10)
+                .description("Test description")
+                .build();
+
+        mockMvc.perform(post("/products")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.name").value("Test Product"))
+                .andExpect(jsonPath("$.price").value(199.99))
+                .andExpect(jsonPath("$.stock").value(10))
+                .andExpect(jsonPath("$.description").value("Test description"));
     }
 
     @Test
     @DisplayName("Testing create product as USER (fail)")
-    public void createProductUser() {
+    @WithMockUser(roles = "USER")
+    public void createProductUser() throws Exception {
+        ProductRequestDTO requestDTO = ProductRequestDTO.builder()
+                .name("Test Product")
+                .price(new BigDecimal("199.99"))
+                .stock(10)
+                .description("Test description")
+                .build();
+
+        mockMvc.perform(post("/products")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("Testing create product as ADMIN with blank values")
-    public void createProductAdminWithBlankValues() {
+    public void createProductAdminWithBlankValues() throws Exception {
+        ProductRequestDTO requestDTO = ProductRequestDTO.builder()
+                .name("")
+                .price(new BigDecimal("199.99"))
+                .stock(0)
+                .description("Test description")
+                .build();
+
+        mockMvc.perform(post("/products")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -93,31 +140,81 @@ public class ProductIntegrationTest {
 
     @Test
     @DisplayName("Testing deleting product as ADMIN")
-    public void deleteProductAdmin() {
+    @WithMockUser(roles = "ADMIN")
+    public void deleteProductAdmin() throws Exception {
+        Product saved = saveProduct("Keyboard", new BigDecimal("499"), 20);
+
+        mockMvc.perform(delete("/products/" + saved.getId()))
+                .andExpect(status().isNoContent());
     }
 
     @Test
     @DisplayName("Testing deleting product as USER (fail)")
-    public void deleteProductUser() {
+    @WithMockUser(roles = "USER")
+    public void deleteProductUser() throws Exception {
+        Product saved = saveProduct("Keyboard", new BigDecimal("499"), 20);
+
+        mockMvc.perform(delete("/products/" + saved.getId()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("Testing deleting product that does not exist")
-    public void deleteProductNotFound() {
+    public void deleteProductNotFound() throws Exception {
+        mockMvc.perform(delete("/products/99"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("Testing decreasing product stock")
-    public void decreaseProductStock() {
+    public void decreaseProductStock() throws Exception {
+        Product saved1 = saveProduct("Keyboard", new BigDecimal("499"), 20);
+        Product saved2 = saveProduct("Mouse", new BigDecimal("299"), 10);
+
+        List<ProductStockRequest> requests = List.of(
+                new ProductStockRequest(saved1.getId(), 5),
+                new ProductStockRequest(saved2.getId(), 3)
+        );
+
+        mockMvc.perform(post("/products/stock/decrease")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requests)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].stock").value(15))
+                .andExpect(jsonPath("$[1].stock").value(7));
     }
 
     @Test
     @DisplayName("Testing decreasing product stock with insufficient stock")
-    public void decreaseProductStockInsufficient() {
+    public void decreaseProductStockInsufficient() throws Exception {
+        Product saved1 = saveProduct("Keyboard", new BigDecimal("499"), 20);
+        Product saved2 = saveProduct("Mouse", new BigDecimal("299"), 10);
+
+        List<ProductStockRequest> requests = List.of(
+                new ProductStockRequest(saved1.getId(), 5),
+                new ProductStockRequest(saved2.getId(), 13)
+        );
+
+        mockMvc.perform(post("/products/stock/decrease")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requests)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message")
+                        .value("Insufficient stock for product '" + saved2.getName() + "': requested " + 13 + ", available " + saved2.getStock()));
     }
 
     @Test
     @DisplayName("Testing decreasing product stock that does not exist")
-    public void decreaseProductStockNotFound() {
+    public void decreaseProductStockNotFound() throws Exception {
+        List<ProductStockRequest> requests = List.of(
+                new ProductStockRequest(99L, 5),
+                new ProductStockRequest(12L, 3)
+        );
+
+        mockMvc.perform(post("/products/stock/decrease")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requests)))
+                .andExpect(status().isNotFound());
     }
 }
