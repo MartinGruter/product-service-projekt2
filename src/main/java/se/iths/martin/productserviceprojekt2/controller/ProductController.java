@@ -1,9 +1,11 @@
 package se.iths.martin.productserviceprojekt2.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import se.iths.martin.productserviceprojekt2.dto.ProductRequestDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductResponseDTO;
@@ -15,12 +17,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "authorization")
 public class ProductController {
 
     private final ProductService productService;
 
     // Create product endpoint (ADMIN only)
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO requestDTO) {
         ProductResponseDTO responseDTO = productService.createProduct(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
@@ -39,8 +43,9 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    // Delete a product endpoint
+    // Delete a product endpoint (ADMIN only)
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         productService.deleteProductById(id);
         return ResponseEntity.noContent().build();
