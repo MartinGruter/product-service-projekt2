@@ -10,7 +10,7 @@
     </parent>
     <groupId>se.iths.martin</groupId>
     <artifactId>product-service-projekt2</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>product-service-projekt2</name>
     <description>product-service-projekt2</description>
     <url/>
