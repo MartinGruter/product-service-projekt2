@@ -32,4 +32,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: martingruter/product-server-projekt2:1.0.0
+          tags: martingruter/product-service-projekt2:1.0.0
