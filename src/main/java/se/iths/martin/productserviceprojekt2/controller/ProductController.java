@@ -56,7 +56,7 @@ public class ProductController {
     @PostMapping("/stock/decrease")
     public ResponseEntity<List<ProductInfoDTO>> decreaseStock(
             @Valid @RequestBody List<ProductStockRequest> requests) {
-        List<ProductResponseDTO> result = productService.decreaseStock(requests);
+        List<ProductInfoDTO> result = productService.decreaseStock(requests);
         return ResponseEntity.ok(result);
     }
 }
