@@ -3,6 +3,7 @@ package se.iths.martin.productserviceprojekt2.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import se.iths.martin.productserviceprojekt2.dto.ProductInfoDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductRequestDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductResponseDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductStockRequest;
@@ -51,7 +52,7 @@ public class ProductService {
 
     // Minska lagersaldo
     @Transactional
-    public List<ProductResponseDTO> decreaseStock(List<ProductStockRequest> stockRequests) {
+    public List<ProductInfoDTO> decreaseStock(List<ProductStockRequest> stockRequests) {
         // hämta alla produkter
         // kontrollera att varje produkt verkligen finns och att stock räcker
         List<Product> products = stockRequests.stream().map(req -> {
@@ -64,7 +65,7 @@ public class ProductService {
         }).toList();
 
         // minska stock
-        List<Product> updated = stockRequests.stream()
+        List<ProductInfoDTO> updated = stockRequests.stream()
                 .map(request -> {
                     Product product = products.stream()
                             .filter(p -> p.getId().equals(request.getProductId()))
@@ -72,13 +73,17 @@ public class ProductService {
                             .get();
 
                     product.setStock(product.getStock() - request.getQuantity());
-                    return productRepository.save(product);
+                    productRepository.save(product);
+                    return ProductInfoDTO.builder()
+                            .id(product.getId())
+                            .name(product.getName())
+                            .price(product.getPrice())
+                            .quantity(request.getQuantity())
+                            .build();
                 })
                 .toList();
 
         // returnera produktinfo
-        return updated.stream()
-                .map(productMapper::toResponseDTO)
-                .toList();
+        return updated;
     }
 }
