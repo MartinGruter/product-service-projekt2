@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import se.iths.martin.productserviceprojekt2.dto.ProductInfoDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductRequestDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductResponseDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductStockRequest;
@@ -53,7 +54,7 @@ public class ProductController {
 
     // Decrease stock endpoint
     @PostMapping("/stock/decrease")
-    public ResponseEntity<List<ProductResponseDTO>> decreaseStock(
+    public ResponseEntity<List<ProductInfoDTO>> decreaseStock(
             @Valid @RequestBody List<ProductStockRequest> requests) {
         List<ProductResponseDTO> result = productService.decreaseStock(requests);
         return ResponseEntity.ok(result);
