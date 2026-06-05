@@ -109,27 +109,27 @@ public class ProductIntegrationTest {
     @Test
     @DisplayName("Testing fetching all products")
     public void fetchAllProducts() throws Exception {
-        saveProduct("Keyboard", new BigDecimal("499"), 20);
+        saveProduct("Screen", new BigDecimal("499"), 20);
         saveProduct("Mouse", new BigDecimal("199"), 50);
 
         mockMvc.perform(get("/products")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].name", containsInAnyOrder("Keyboard", "Mouse")));
+                .andExpect(jsonPath("$[*].name", containsInAnyOrder("Screen", "Mouse")));
     }
 
     @Test
     @DisplayName("Testing fetching product by id")
     public void fetchProductById() throws Exception {
-        Product saved = saveProduct("Keyboard", new BigDecimal("499"), 20);
+        Product saved = saveProduct("Mouse", new BigDecimal("299"), 20);
 
         mockMvc.perform(get("/products/" + saved.getId())
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(saved.getId()))
-                .andExpect(jsonPath("$.name").value("Keyboard"))
-                .andExpect(jsonPath("$.price").value(499))
+                .andExpect(jsonPath("$.name").value("Mouse"))
+                .andExpect(jsonPath("$.price").value(299))
                 .andExpect(jsonPath("$.stock").value(20));
     }
 
@@ -145,7 +145,7 @@ public class ProductIntegrationTest {
     @Test
     @DisplayName("Testing deleting product as ADMIN")
     public void deleteProductAdmin() throws Exception {
-        Product saved = saveProduct("Keyboard", new BigDecimal("499"), 20);
+        Product saved = saveProduct("Mouse", new BigDecimal("299"), 20);
 
         mockMvc.perform(delete("/products/" + saved.getId())
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
@@ -155,7 +155,7 @@ public class ProductIntegrationTest {
     @Test
     @DisplayName("Testing deleting product as USER (fail)")
     public void deleteProductUser() throws Exception {
-        Product saved = saveProduct("Keyboard", new BigDecimal("499"), 20);
+        Product saved = saveProduct("Mouse", new BigDecimal("299"), 20);
 
         mockMvc.perform(delete("/products/" + saved.getId())
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
@@ -170,29 +170,29 @@ public class ProductIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-//    @Test
-//    @DisplayName("Testing decreasing product stock")
-//    public void decreaseProductStock() throws Exception {
-//        Product saved1 = saveProduct("Keyboard", new BigDecimal("499"), 20);
-//        Product saved2 = saveProduct("Mouse", new BigDecimal("299"), 10);
-//
-//        List<ProductStockRequest> requests = List.of(
-//                new ProductStockRequest(saved1.getId(), 5),
-//                new ProductStockRequest(saved2.getId(), 3)
-//        );
-//
-//        mockMvc.perform(post("/products/stock/decrease")
-//                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER")))
-//                        .contentType("application/json")
-//                        .content(objectMapper.writeValueAsString(requests)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$", hasSize(2)));
-//    }
+    @Test
+    @DisplayName("Testing decreasing product stock")
+    public void decreaseProductStock() throws Exception {
+        Product saved1 = saveProduct("Screen", new BigDecimal("499"), 20);
+        Product saved2 = saveProduct("Mouse", new BigDecimal("299"), 10);
+
+        List<ProductStockRequest> requests = List.of(
+                new ProductStockRequest(saved1.getId(), 5),
+                new ProductStockRequest(saved2.getId(), 3)
+        );
+
+        mockMvc.perform(post("/products/stock/decrease")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER")))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requests)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
 
     @Test
     @DisplayName("Testing decreasing product stock with insufficient stock")
     public void decreaseProductStockInsufficient() throws Exception {
-        Product saved1 = saveProduct("Keyboard", new BigDecimal("499"), 20);
+        Product saved1 = saveProduct("Screen", new BigDecimal("499"), 20);
         Product saved2 = saveProduct("Mouse", new BigDecimal("299"), 10);
 
         List<ProductStockRequest> requests = List.of(
