@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import se.iths.martin.productserviceprojekt2.dto.ProductRequestDTO;
 import se.iths.martin.productserviceprojekt2.dto.ProductStockRequest;
+import se.iths.martin.productserviceprojekt2.model.Category;
 import se.iths.martin.productserviceprojekt2.model.Product;
 import se.iths.martin.productserviceprojekt2.repository.ProductRepository;
 
@@ -47,6 +48,8 @@ public class ProductIntegrationTest {
                 .description("A test product")
                 .price(price)
                 .stock(stock)
+                .category(Category.ELECTRONICS)
+                .imageUrl("https://example.com/image.jpg")
                 .build());
     }
 
@@ -58,6 +61,8 @@ public class ProductIntegrationTest {
                 .price(new BigDecimal("199.99"))
                 .stock(10)
                 .description("Test description")
+                .category(Category.ELECTRONICS)
+                .imageUrl("https://example.com/image.jpg")
                 .build();
 
         mockMvc.perform(post("/products")
@@ -69,7 +74,9 @@ public class ProductIntegrationTest {
                 .andExpect(jsonPath("$.name").value("Test Product"))
                 .andExpect(jsonPath("$.price").value(199.99))
                 .andExpect(jsonPath("$.stock").value(10))
-                .andExpect(jsonPath("$.description").value("Test description"));
+                .andExpect(jsonPath("$.description").value("Test description"))
+                .andExpect(jsonPath("$.category").value("ELECTRONICS"))
+                .andExpect(jsonPath("$.imageUrl").value("https://example.com/image.jpg"));
     }
 
     @Test
@@ -80,6 +87,8 @@ public class ProductIntegrationTest {
                 .price(new BigDecimal("199.99"))
                 .stock(10)
                 .description("Test description")
+                .category(Category.ELECTRONICS)
+                .imageUrl("https://example.com/image.jpg")
                 .build();
 
         mockMvc.perform(post("/products")
@@ -97,6 +106,8 @@ public class ProductIntegrationTest {
                 .price(new BigDecimal("199.99"))
                 .stock(0)
                 .description("Test description")
+                .category(Category.ELECTRONICS)
+                .imageUrl("https://example.com/image.jpg")
                 .build();
 
         mockMvc.perform(post("/products")
