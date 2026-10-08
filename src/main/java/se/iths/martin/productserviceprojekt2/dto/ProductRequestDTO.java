@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
+import se.iths.martin.productserviceprojekt2.model.Category;
 
 import java.math.BigDecimal;
 
@@ -25,4 +26,10 @@ public class ProductRequestDTO {
 
     @Min(value = 0, message = "Stock cannot be negative")
     private int stock;
+
+    @NotNull(message = "Category is required")
+    private Category category;
+
+    @NotNull(message = "Image is required")
+    private String imageUrl;
 }

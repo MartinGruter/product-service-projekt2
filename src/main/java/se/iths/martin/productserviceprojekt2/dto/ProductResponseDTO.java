@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import se.iths.martin.productserviceprojekt2.model.Category;
 
 import java.math.BigDecimal;
 
@@ -17,4 +18,6 @@ public class ProductResponseDTO {
     private String description;
     private BigDecimal price;
     private int stock;
+    private Category category;
+    private String imageUrl;
 }
