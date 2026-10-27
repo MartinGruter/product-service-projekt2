@@ -15,13 +15,20 @@ import se.iths.martin.productserviceprojekt2.repository.ProductRepository;
 
 import java.util.List;
 
+/**
+ * Affärslogik för hantering av produkter. Ansvarar för CRUD operationer på produkter samt för att minska lagersaldo vid orderläggning.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductMapper productMapper;
     private final ProductRepository productRepository;
 
-    // Hämta alla produkter
+    /**
+     * Hämtar samtliga produkter.
+     *
+     * @return lista med alla produkter,tom lista om inga finns
+     */
     public List<ProductResponseDTO> getAllProducts() {
         return productRepository.findAll()
                 .stream()
@@ -29,13 +36,24 @@ public class ProductService {
                 .toList();
     }
 
-    // Hämta specifik produkt
+    /**
+     * Hämtar en specifik produkter via id.
+     *
+     * @param id produktens id
+     * @return produkten
+     * @throws ProductNotFoundException om ingen produkt med angivet id existerar
+     */
     public ProductResponseDTO getProductById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
         return productMapper.toResponseDTO(product);
     }
 
-    // Ta bort produkt
+    /**
+     * Borttagning av produkt via id.
+     *
+     * @param id produktens id
+     * @throws ProductNotFoundException om ingen produkt med angivet id existerar
+     */
     public void deleteProductById(Long id) {
         if (!productRepository.existsById(id)) {
             throw new ProductNotFoundException(id);
@@ -43,20 +61,31 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    // Skapa produkt
+    /**
+     * Skapar en ny produkt.
+     *
+     * @param request produktdata från klienten
+     * @return den skapade produkten
+     */
     public ProductResponseDTO createProduct(ProductRequestDTO request) {
         Product newProduct = productMapper.toEntity(request);
         Product savedProduct = productRepository.save(newProduct);
         return productMapper.toResponseDTO(savedProduct);
     }
 
-    // Minska lagersaldo
+    /**
+     * Minskar lagersaldo för en eller flera produkter. Samtliga produkter i förfrågan hämtas och valideras.
+     * Om valideringen misslyckas för någon produkt kastas ett exception och ingen produkt i listan uppdateras,
+     * tack vare {@link Transactional}.
+     *
+     * @param stockRequests lista av produkter av datatypen {@link ProductStockRequest}
+     * @return info om varje uppdaterad produkt
+     * @throws ProductNotFoundException   om någon produkt inte existerar
+     * @throws InsufficientStockException om efterfrågad kvantitet överstiger tillgängligt lager för någon produkt
+     */
     @Transactional
     public List<ProductInfoDTO> decreaseStock(List<ProductStockRequest> stockRequests) {
-        // hämta alla produkter
-        // kontrollera att varje produkt verkligen finns och att stock räcker
         List<Product> products = stockRequests.stream().map(req -> {
-            // kasta exception om inte en produkt finns eller stock inte räcker
             Product pro = productRepository.findById(req.getProductId()).orElseThrow(() -> new ProductNotFoundException(req.getProductId()));
             if (pro.getStock() < req.getQuantity()) {
                 throw new InsufficientStockException(pro.getName(), req.getQuantity(), pro.getStock());
@@ -64,7 +93,6 @@ public class ProductService {
             return pro;
         }).toList();
 
-        // minska stock
         List<ProductInfoDTO> updated = stockRequests.stream()
                 .map(request -> {
                     Product product = products.stream()
@@ -83,7 +111,6 @@ public class ProductService {
                 })
                 .toList();
 
-        // returnera produktinfo
         return updated;
     }
 }
