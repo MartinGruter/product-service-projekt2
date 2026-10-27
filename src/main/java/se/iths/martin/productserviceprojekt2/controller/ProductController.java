@@ -15,6 +15,10 @@ import se.iths.martin.productserviceprojekt2.service.ProductService;
 
 import java.util.List;
 
+
+/**
+ * REST-controller för hantering av produkter. Samtiliga endpoints kräver en giltig JWT. Skapandet och borttagning av produkter kräver dessutom rollen {@code ADMIN}.
+ */
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
@@ -23,7 +27,15 @@ public class ProductController {
 
     private final ProductService productService;
 
-    // Create product endpoint (ADMIN only)
+    /**
+     * Skapar en ny produkt.
+     * <p>
+     * Kräver rollen {@code ADMIN}. Indata valideras enligt constraints
+     * i {@link ProductRequestDTO}.
+     *
+     * @param requestDTO produkt data från klienten.
+     * @return den skapade produkten med ett id.
+     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO requestDTO) {
@@ -31,20 +43,34 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
-    // List all products endpoint
+    /**
+     * Hämtar samtliga produkter.
+     *
+     * @return lista med alla produkter, tom om inga produkter finns.
+     */
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
         List<ProductResponseDTO> responseDTOS = productService.getAllProducts();
         return ResponseEntity.ok(responseDTOS);
     }
 
-    // Get a single product endpoint
+    /**
+     * Hämtar en produkt via id.
+     *
+     * @param id produktens id
+     * @return produkten
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getProduct(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    // Delete a product endpoint (ADMIN only)
+    /**
+     * Tar bort produkt via id. Kräver rollen {@code AMDIN}
+     *
+     * @param id produktens id
+     * @return {@code 204 No Content} vid lyckad borttagning
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
@@ -52,7 +78,12 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    // Decrease stock endpoint
+    /**
+     * Minskar lagersaldoför en eller flera produkter. Samtliga produkter i förfrågan valideras innan något lager minskas. Antingen lyckas hela anropet eller inget.
+     *
+     * @param requests lista med produkter av data typen {@link ProductStockRequest}
+     * @return skickar tillbaka en lista av uppdaterad produkter ({@link ProductInfoDTO})
+     */
     @PostMapping("/stock/decrease")
     public ResponseEntity<List<ProductInfoDTO>> decreaseStock(
             @Valid @RequestBody List<ProductStockRequest> requests) {
